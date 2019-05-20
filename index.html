@@ -1,0 +1,223 @@
+<!--
+ * Author:        Benjamin Thomas
+ * Client:        Ben Rogers, WebstaurantStore
+ * Creation Date: May 19th, 2019
+ * Purpose:       Currency conversion appication using exchangeratesapi.io,
+ *                Written with Bootstrap, Moment.js, and Vue.js
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="">
+  <meta name="author" content="Benjamin Thomas">
+
+  <title>Currency Exchange</title>
+
+  <!-- Bootstrap core CSS -->
+  <link href="css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark static-top">
+    <div class="container">
+      <a class="navbar-brand" href="#">Currency Exchange</a>
+    </div>
+  </nav>
+
+  <!-- Page Content -->
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-12 text-center">
+        <h1 class=""></h1>
+        <p class="mt-5 lead">Currency conversion tool, comparing rates provided by <a href="https://exchangeratesapi.io">exchangeratesapi.io</a>
+        </p>
+        <div class="row justify-content-center">
+          <div id="app" class="col-md-6">
+            <div>
+              <h3>{{display}}</h3>
+              <p>{{formattedDate}}</p>
+            </div>
+            <template v-if="requestDate !== ''">
+              <div  class="row">
+                <div class="form-group col-6">
+                  <input class="form-control" type="number" v-model="val1" @input="updateVal2">
+                </div>
+                <div class="form-group col-6">
+                  <select class="form-control" v-model="cur1" @change="updateVal2">
+                    <option v-for="currency in currencies" v-bind:value="currency">{{currency}}</option>
+                  </select>
+                </div>
+              </div>
+              <div class="row">
+                <div class="form-group col-6">
+                  <input class="form-control" type="number" v-model="val2" @input="updateVal1">
+                </div>
+                <div class="form-group col-6">
+                  <select class="form-control" v-model="cur2"  @change="updateVal2">
+                    <option v-for="currency in currencies" v-bind:value="currency">{{currency}}</option>
+                  </select>
+                </div>
+              </div>
+            </template>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap core JavaScript -->
+  <script src="js/jquery.slim.min.js"></script>
+  <script src="js/bootstrap.min.js"></script>
+  <script src="js/moment.min.js"></script>
+  <script src="js/vue.js"></script>
+
+  <script type="text/javascript">
+  (function() {
+    /**
+     * Throws an error if there was a problem with the request
+     * @return {Sting} The status text from the response
+     */
+    var handleRequestErrors = function(res) {
+      if(!res.ok) {
+        throw Error(res.statusText);
+      }
+      return res;
+    }
+
+    /**
+     * returns true of the value passed is an invalid string.
+     *  Conditions:
+     *  - value must be a string
+     *  - value must not be ""
+     *  - value must not be a number
+     *  - value must contain "e" or "E"
+     * @param  {String/Number}  s value to test
+     * @return {Boolean}   if the value was an invalid string
+     */
+    var isInvalidString = function (s) {
+      if(typeof s !== "string")
+        return false;
+      else if(s == "")
+        return true;
+      else if(isNaN(s))
+        return true;
+      else if(s.indexOf('e') == -1 && s.indexOf('E') == -1)
+        return false;
+      else
+        return true;
+    }
+
+    // initialize Vue object
+    var app = new Vue({
+      el: "#app",
+      data: {
+        display: "",
+        val1: 1,
+        val2: undefined,
+        cur1: "USD",
+        cur2: "EUR",
+        requestDate: "",
+        currencies:[],
+        rates: []
+      },
+      created() {
+        fetch("https://api.exchangeratesapi.io/latest?base=USD")
+          .then(handleRequestErrors)
+          .then(res => res.json())
+          .then(res => {
+            this.rates = res.rates;
+
+            // Store date as a moment object for formatting
+            this.requestDate = moment(res.date);
+
+            for(var i in this.rates) {
+              this.currencies.push(i);
+            }
+
+            // Update val2 using requested rates
+            this.updateVal2();
+          })
+          .catch(error => {
+            this.display = "There was a problem connecting to the API. Please try again later.";
+            console.error("Problem with API Request: ", error);
+          })
+      },
+      computed: {
+        formattedDate() {
+          if(this.requestDate !== "")
+            return "As of " + this.requestDate.format("ddd, Do YYYY")
+        }
+      },
+      methods: {
+        /**
+         * Converts a value from one currency to another using requested rates
+         * @param  {number} value Original value to convert
+         * @param  {string} from  Currency of original value
+         * @param  {string} to    Currency to convert to
+         * @return {number}       value in new currency
+         */
+        convert(value, from, to) {
+          return value / this.rates[from] * this.rates[to];
+        },
+
+        /**
+         * calculates val2 using val1 and both currencies. If val1 is a negative
+         * number, set val2 to undefined
+         *
+         */
+        updateVal2() {
+
+          // If val1 is not defined or the currencies are not loaded,
+          // do not update anything
+          if(typeof this.val2 === undefined || this.currencies.length == 0)
+            return;
+
+          // If val1 is an Invalid string or negative number, clear val2
+          if(isInvalidString(this.val1) || this.val1 < 0) {
+            this.val2 = undefined
+          }
+
+          else {
+            this.val2 = this.convert(this.val1, this.cur1, this.cur2).toFixed(2);
+            this.updateDisplay();
+          }
+        },
+        /**
+         * calculates val2 using val1 and both currencies. If val1 is a negative
+         * number, set val2 to undefined
+         *
+         */
+        updateVal1() {
+
+          // If val1 is not defined or the currencies are not loaded,
+          // do not update anything
+          if(typeof this.val2 === undefined || this.currencies.length == 0)
+            return;
+
+          // If val2 is an Invalid string or negative number, clear val1
+          if(isInvalidString(this.val2) || this.val2 < 0) {
+            this.val1 = undefined
+          }
+          // convert val1 as a fixed number to the 2nd decimal place
+          else {
+            this.val1 = this.convert(this.val2, this.cur2, this.cur1).toFixed(2);
+            this.updateDisplay();
+          }
+        },
+
+        /**
+         * Updates the conversion line
+         * @return {[type]} [description]
+         */
+        updateDisplay() {
+          this.display = `${this.val1} ${this.cur1} equals ${this.val2} ${this.cur2}`;
+        }
+      }
+    });
+  })();
+  </script>
+</body>
+</html>
