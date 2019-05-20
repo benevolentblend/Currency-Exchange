@@ -3,14 +3,14 @@
  * Client:        Ben Rogers, WebstaurantStore
  * Creation Date: May 19th, 2019
  * Purpose:       Currency conversion appication using exchangeratesapi.io,
- *                Written with Bootstrap, Moment.js, and Vue.js
+ *                written with Bootstrap, Moment.js, and Vue.js
 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta name="description" content="">
+  <meta name="description" content="Currency conversion appication using exchangeratesapi.io, written with Bootstrap, Moment.js, and Vue.js">
   <meta name="author" content="Benjamin Thomas">
 
   <title>Currency Exchange</title>
@@ -89,11 +89,10 @@
 
     /**
      * returns true of the value passed is an invalid string.
-     *  Conditions:
+     *  Conditions for valid string:
      *  - value must be a string
      *  - value must not be ""
-     *  - value must not be a number
-     *  - value must contain "e" or "E"
+     *  - value be a number
      * @param  {String/Number}  s value to test
      * @return {Boolean}   if the value was an invalid string
      */
@@ -102,12 +101,7 @@
         return false;
       else if(s == "")
         return true;
-      else if(isNaN(s))
-        return true;
-      else if(s.indexOf('e') == -1 && s.indexOf('E') == -1)
-        return false;
-      else
-        return true;
+      return isNaN(s)
     }
 
     // initialize Vue object
