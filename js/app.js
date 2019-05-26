@@ -1,4 +1,4 @@
-// (function() {
+(function() {
   /**
    * Throws an error if there was a problem with the request
    * @return {Sting} The status text from the response
@@ -25,8 +25,44 @@
     else if(s == "")
       return false;
     else
-      return !isNaN(s)
+      return !isNaN(s);
   }
+
+  var fullNames = {
+    "AUD": "Australian Dollar",
+    "BRL": "Brazilian Real",
+    "GBP": "British Pound Sterline",
+    "BGN": "Bulgarian Lev",
+    "CAD": "Canadian Dollar",
+    "CNY": "Chinese Yuan Renminbi",
+    "HRK": "Croatian Kuna",
+    "CZK": "Czech Koruna",
+    "DKK": "Danish Krone",
+    "EUR": "Euro",
+    "HKD": "Hong Kong Dollar",
+    "HUF": "Hungarian Forint",
+    "ISK": "Icelandic Krona",
+    "IDR": "Indonesian Rupiah",
+    "INR": "Indian Rupee",
+    "ILS": "Israeli Shekel",
+    "JPY": "Japanese Yen",
+    "MYR": "Malaysian Ringgit",
+    "MXN": "Mexican Peso",
+    "NZD": "New Zealand Dollar",
+    "NOK": "Norwegian Krone",
+    "PHP": "Philippine Peso",
+    "PLN": "Polish Zloty",
+    "RON": "Romanian Leu",
+    "RUB": "Russian Rouble",
+    "SGD": "Singapore Dollar",
+    "ZAR": "South African Rand",
+    "KRW": "South Korean Won",
+    "SEK": "Swedish Krona",
+    "CHF": "Swiss Franc",
+    "THB": "Thai Baht",
+    "TRY": "Turkish Lira",
+    "USD": "US Dollar"
+  };
 
   // initialize Vue object
   var app = new Vue({
@@ -68,7 +104,7 @@
     computed: {
       formattedDate() {
         if(this.requestDate !== "")
-          return "As of " + this.requestDate.format("MMM, Do YYYY")
+          return "As of " + this.requestDate.format("MMM, Do YYYY");
       }
     },
     methods: {
@@ -97,7 +133,7 @@
 
         // If val1 is an Invalid string or negative number, clear val2
         if(typeof this.val1 !== "number" && !isValidString(this.val1) || this.val1 < 0) {
-          this.val2 = undefined
+          this.val2 = undefined;
         }
 
         else {
@@ -119,13 +155,20 @@
 
         // If val2 is an Invalid string or negative number, clear val1
         if(typeof this.val2 !== "number" && !isValidString(this.val2) || this.val2 < 0) {
-          this.val1 = undefined
+          this.val1 = undefined;
         }
         // convert val1 as a fixed number to the 2nd decimal place
         else {
           this.val1 = this.convert(this.val2, this.cur2, this.cur1).toFixed(2);
           this.updateDisplay();
         }
+      },
+
+      fullRateName(rate) {
+        if(fullNames[rate] !== undefined)
+          return fullNames[rate];
+        else
+          return rate;
       },
 
       /**
@@ -136,4 +179,4 @@
       }
     }
   });
-// })();
+})();
